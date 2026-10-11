@@ -2,10 +2,38 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Repository\ProductRepository;
+use App\State\LowStockProvider;
+use App\State\ProductProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
+#[ApiResource(
+    operations: [
+        new \ApiPlatform\Metadata\GetCollection(
+            uriTemplate: '/products/low-stock',
+            provider: LowStockProvider::class,
+            parameters: [
+                'limit' => new QueryParameter(
+                    schema: [
+                        'type' => 'integer',
+                        'default' => 5,
+
+                    ],
+                    castToNativeType: true,
+                ),
+            ],
+        ),
+        new \ApiPlatform\Metadata\Get(),
+        new \ApiPlatform\Metadata\GetCollection(),
+        new \ApiPlatform\Metadata\Post(processor: ProductProcessor::class),
+        new \ApiPlatform\Metadata\Put(security: "is_granted('ROLE_ADMIN')"),
+        new \ApiPlatform\Metadata\Delete(security: "is_granted('ROLE_ADMIN')"),
+    ],
+)]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {
@@ -21,6 +49,7 @@ class Product
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Assert\Positive(message: 'The price must be a positive number.')]
     private ?string $price = null;
 
     #[ORM\Column]

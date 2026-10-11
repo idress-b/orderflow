@@ -16,6 +16,19 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+     /**
+    * @return Product[] Returns an array of Product objects
+    */
+   public function findLowStockProducts($value): array
+   {
+       return $this->createQueryBuilder('p')
+           ->andWhere('p.stock <= :val')
+           ->setParameter('val', $value)
+           ->getQuery()
+           ->getResult()
+       ;
+   }
+
 //    /**
 //     * @return Product[] Returns an array of Product objects
 //     */
